@@ -786,6 +786,78 @@
         }
       }
     },
+    "/api/Shows/{showId}/seats": {
+      "get": {
+        "tags": [
+          "Shows"
+        ],
+        "parameters": [
+          {
+            "name": "showId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Shows/{showId}/seats/available": {
+      "get": {
+        "tags": [
+          "Shows"
+        ],
+        "parameters": [
+          {
+            "name": "showId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Shows/{showId}/seats/booked": {
+      "get": {
+        "tags": [
+          "Shows"
+        ],
+        "parameters": [
+          {
+            "name": "showId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Theatres": {
       "post": {
         "tags": [

@@ -137,5 +137,38 @@ namespace MovieTicketBooking.Controllers
                 return Conflict(ex.Message);
             }
         }
+
+        [HttpGet("{showId:int}/seats")]
+        public async Task<IActionResult> GetShowSeats(int showId)
+        {
+            if (await _service.GetByIdAsync(showId) == null)
+                return NotFound("Show not found.");
+
+            var seats = await _service.GetShowSeatsAsync(showId);
+
+            return Ok(seats);
+        }
+
+        [HttpGet("{showId:int}/seats/available")]
+        public async Task<IActionResult> GetAvailableSeats(int showId)
+        {
+            if (await _service.GetByIdAsync(showId) == null)
+                return NotFound("Show not found.");
+
+            var seats = await _service.GetAvailableSeatsAsync(showId);
+
+            return Ok(seats);
+        }
+
+        [HttpGet("{showId:int}/seats/booked")]
+        public async Task<IActionResult> GetBookedSeats(int showId)
+        {
+            if (await _service.GetByIdAsync(showId) == null)
+                return NotFound("Show not found.");
+
+            var seats = await _service.GetBookedSeatsAsync(showId);
+
+            return Ok(seats);
+        }
     }
 }

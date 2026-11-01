@@ -27,5 +27,11 @@ namespace MovieTicketBooking.Services.Interfaces
         Task<ShowResponse?> UpdateAsync(int id, UpdateShowRequest request);
 
         Task<bool> DeleteAsync(int id);
+
+        Task<List<ShowSeatResponse>> GetShowSeatsAsync(int showId);
+
+        Task<List<ShowSeatResponse>> GetAvailableSeatsAsync(int showId);
+
+        Task<List<ShowSeatResponse>> GetBookedSeatsAsync(int showId);
     }
 }

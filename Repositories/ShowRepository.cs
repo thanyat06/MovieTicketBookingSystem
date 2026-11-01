@@ -169,5 +169,31 @@ namespace MovieTicketBooking.Repositories
             _context.Shows.Remove(show);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<ShowSeat>> GetShowSeatsAsync(int showId)
+        {
+            return await _context.ShowSeats
+                .Include(ss => ss.Seat)
+                .Where(ss => ss.ShowId == showId)
+                .ToListAsync();
+        }
+
+        public async Task<List<ShowSeat>> GetAvailableSeatsAsync(int showId)
+        {
+            return await _context.ShowSeats
+                .Include(ss => ss.Seat)
+                .Where(ss => ss.ShowId == showId &&
+                             ss.Status == "Available")
+                .ToListAsync();
+        }
+
+        public async Task<List<ShowSeat>> GetBookedSeatsAsync(int showId)
+        {
+            return await _context.ShowSeats
+                .Include(ss => ss.Seat)
+                .Where(ss => ss.ShowId == showId &&
+                             ss.Status == "Booked")
+                .ToListAsync();
+        }
     }
 }

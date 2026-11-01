@@ -409,6 +409,54 @@
   },
   {
     "ContainingType": "MovieTicketBooking.Controllers.ShowsController",
+    "Method": "GetShowSeats",
+    "RelativePath": "api/Shows/{showId}/seats",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "showId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MovieTicketBooking.Controllers.ShowsController",
+    "Method": "GetAvailableSeats",
+    "RelativePath": "api/Shows/{showId}/seats/available",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "showId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MovieTicketBooking.Controllers.ShowsController",
+    "Method": "GetBookedSeats",
+    "RelativePath": "api/Shows/{showId}/seats/booked",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "showId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MovieTicketBooking.Controllers.ShowsController",
     "Method": "GetByMovieId",
     "RelativePath": "api/Shows/movie/{movieId}",
     "HttpMethod": "GET",

@@ -137,5 +137,40 @@ namespace MovieTicketBooking.Services
                 TicketPrice = show.TicketPrice
             };
         }
+
+        public async Task<List<ShowSeatResponse>> GetShowSeatsAsync(int showId)
+        {
+            var seats = await _repository.GetShowSeatsAsync(showId);
+
+            return seats.Select(MapShowSeat).ToList();
+        }
+
+        public async Task<List<ShowSeatResponse>> GetAvailableSeatsAsync(int showId)
+        {
+            var seats = await _repository.GetAvailableSeatsAsync(showId);
+
+            return seats.Select(MapShowSeat).ToList();
+        }
+
+        public async Task<List<ShowSeatResponse>> GetBookedSeatsAsync(int showId)
+        {
+            var seats = await _repository.GetBookedSeatsAsync(showId);
+
+            return seats.Select(MapShowSeat).ToList();
+        }
+
+        private ShowSeatResponse MapShowSeat(ShowSeat showSeat)
+        {
+            return new ShowSeatResponse
+            {
+                ShowSeatId = showSeat.ShowSeatId,
+                ShowId = showSeat.ShowId,
+                SeatId = showSeat.SeatId,
+                RowName = showSeat.Seat!.RowName,
+                SeatNumber = showSeat.Seat.SeatNumber,
+                SeatType = showSeat.Seat.SeatType,
+                Status = showSeat.Status
+            };
+        }
     }
 }
