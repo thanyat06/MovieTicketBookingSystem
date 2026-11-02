@@ -14,6 +14,7 @@ namespace MovieTicketBooking.Services.Interfaces
         Task<SeatResponse> CreateAsync(CreateSeatRequest request);
         Task<List<SeatResponse>> CreateBulkAsync(
             List<CreateSeatRequest> requests);
+        Task<List<SeatResponse>> GetAllAsync();
         Task<SeatResponse?> UpdateAsync(int id, UpdateSeatRequest request);
         Task<bool> DeleteAsync(int id);
     }

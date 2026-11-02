@@ -42,6 +42,11 @@ namespace MovieTicketBooking.Repositories
                  s.SeatId != excludeSeatId.Value));
         }
 
+        public async Task<List<Seat>> GetAllAsync()
+        {
+            return await _context.Seats.ToListAsync();
+        }
+
         public async Task AddAsync(Seat seat)
         {
             _context.Seats.Add(seat);

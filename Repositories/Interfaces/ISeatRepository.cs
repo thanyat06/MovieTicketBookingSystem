@@ -1,4 +1,5 @@
 ﻿
+using MovieTicketBooking.DTOs.Seats;
 using MovieTicketBooking.Models;
 
 namespace MovieTicketBooking.Repositories.Interfaces
@@ -7,6 +8,7 @@ namespace MovieTicketBooking.Repositories.Interfaces
     {
         Task<List<Seat>> GetByScreenIdAsync(int screenId);
         Task<Seat?> GetByIdAsync(int id);
+        Task<List<Seat>> GetAllAsync();
         Task<bool> SeatExistsAsync(
             int screenId, string rowName, int seatNumber,
             int? excludeSeatId = null);

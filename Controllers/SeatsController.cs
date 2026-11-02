@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MovieTicketBooking.DTOs.Seats;
 using MovieTicketBooking.Services.Interfaces;
@@ -16,6 +17,15 @@ namespace MovieTicketBooking.Controllers
             _service = service;
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var seats = await _service.GetAllAsync();
+            return Ok(seats);
+        }
+
+        [Authorize(Roles = "Admin,TheatreManager")]
         [HttpPost]
         public async Task<IActionResult> Create(CreateSeatRequest request)
         {
@@ -34,6 +44,7 @@ namespace MovieTicketBooking.Controllers
                 seat);
         }
 
+        [Authorize(Roles = "Admin,TheatreManager")]
         [HttpPost("bulk")]
         public async Task<IActionResult> CreateBulk(
             List<CreateSeatRequest> requests)
@@ -41,7 +52,6 @@ namespace MovieTicketBooking.Controllers
             if (requests == null || requests.Count == 0)
                 return BadRequest("At least one seat is required.");
 
-            // Check duplicate seats inside the request.
             var duplicateRequests = requests
                 .GroupBy(r =>
                     $"{r.ScreenId}|{r.RowName}|{r.SeatNumber}",
@@ -67,6 +77,7 @@ namespace MovieTicketBooking.Controllers
             return Ok(seats);
         }
 
+        [AllowAnonymous]
         [HttpGet("screen/{screenId:int}")]
         public async Task<IActionResult> GetByScreenId(int screenId)
         {
@@ -78,6 +89,7 @@ namespace MovieTicketBooking.Controllers
             return Ok(seats);
         }
 
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -89,6 +101,7 @@ namespace MovieTicketBooking.Controllers
             return Ok(seat);
         }
 
+        [Authorize(Roles = "Admin,TheatreManager")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(
             int id, UpdateSeatRequest request)
@@ -108,6 +121,7 @@ namespace MovieTicketBooking.Controllers
             return Ok(seat);
         }
 
+        [Authorize(Roles = "Admin,TheatreManager")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {

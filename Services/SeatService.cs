@@ -19,6 +19,13 @@ namespace MovieTicketBooking.Services
             _screenRepository = screenRepository;
         }
 
+        public async Task<List<SeatResponse>> GetAllAsync()
+        {
+            var seats = await _repository.GetAllAsync();
+
+            return seats.Select(s => MapToResponse(s)).ToList();
+        }
+
         public async Task<List<SeatResponse>> GetByScreenIdAsync(int screenId)
         {
             var seats = await _repository.GetByScreenIdAsync(screenId);

@@ -26,11 +26,18 @@ namespace MovieTicketBooking.Services
             return bookings.Select(MapToResponse).ToList();
         }
 
-        public async Task<BookingResponse?> GetByIdAsync(int id)
+        public async Task<BookingResponse?> GetByIdAsync(
+            int id, int userId, bool isAdmin)
         {
             var booking = await _repository.GetByIdAsync(id);
 
-            return booking == null ? null : MapToResponse(booking);
+            if (booking == null)
+                return null;
+
+            if (!isAdmin && booking.UserId != userId)
+                return null;
+
+            return MapToResponse(booking);
         }
 
         public async Task<List<BookingResponse>> GetByShowIdAsync(int showId)
@@ -41,7 +48,10 @@ namespace MovieTicketBooking.Services
         }
 
         public async Task<BookingResponse> CreateAsync(
-            CreateBookingRequest request)
+            CreateBookingRequest request,
+            int userId,
+            string customerName,
+            string customerEmail)
         {
             if (request.SeatIds.Distinct().Count() != request.SeatIds.Count)
                 throw new InvalidOperationException(
@@ -68,8 +78,9 @@ namespace MovieTicketBooking.Services
                     Guid.NewGuid().ToString("N")[..12].ToUpper(),
 
                 ShowId = request.ShowId,
-                CustomerName = request.CustomerName,
-                CustomerEmail = request.CustomerEmail,
+                UserId = userId,
+                CustomerName = customerName,
+                CustomerEmail = customerEmail,
                 CustomerPhone = request.CustomerPhone,
                 BookingDate = DateTime.UtcNow,
                 Status = "Confirmed"
@@ -81,8 +92,17 @@ namespace MovieTicketBooking.Services
             return MapToResponse(created);
         }
 
-        public async Task<bool> CancelAsync(int bookingId)
+        public async Task<bool> CancelAsync(
+            int bookingId, int userId, bool isAdmin)
         {
+            var booking = await _repository.GetByIdAsync(bookingId);
+
+            if (booking == null)
+                return false;
+
+            if (!isAdmin && booking.UserId != userId)
+                return false;
+
             return await _repository.CancelAsync(bookingId);
         }
 

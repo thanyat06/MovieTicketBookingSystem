@@ -4,7 +4,9 @@
 
 The Movie Ticket Booking System is a backend REST API application developed using C#, ASP.NET Core Web API, Entity Framework Core, and SQL Server.
 
-The application allows users to manage movies, theatres, screens, physical seats, and movie shows. Customers can view seat availability, book tickets, retrieve booking details, and cancel confirmed bookings.
+The application manages movies, theatres, screens, physical seats, and movie shows. Customers can view seat availability, book tickets, retrieve booking details, and cancel confirmed bookings.
+
+The application also implements JWT authentication and role-based authorization for Admin, TheatreManager, and Customer users.
 
 The project follows a layered architecture to separate HTTP handling, business logic, and database operations.
 
@@ -18,6 +20,8 @@ The project follows a layered architecture to separate HTTP handling, business l
 - Implement booking creation and cancellation.
 - Maintain booking and seat history.
 - Perform database operations using Entity Framework Core.
+- Implement JWT-based authentication.
+- Restrict API access using role-based authorization.
 
 ## 3. Technology Stack
 
@@ -29,6 +33,7 @@ The project follows a layered architecture to separate HTTP handling, business l
 | ORM | Entity Framework Core 10 |
 | Database | SQL Server |
 | Database Tool | SQL Server Management Studio |
+| Authentication | JWT |
 | API Testing | Postman |
 | IDE | Visual Studio |
 | Version Control | Git and GitHub |
@@ -57,7 +62,11 @@ Repositories perform database operations using Entity Framework Core.
 
 ### DTOs
 
-Data Transfer Objects are used to define API request and response structures instead of exposing database entities directly.
+Data Transfer Objects define API request and response structures instead of exposing database entities directly.
+
+### Authentication and Authorization
+
+JWT authentication validates user identity. Role-based authorization controls access to protected API operations.
 
 ## 5. Project Folder Structure
 
@@ -70,7 +79,8 @@ MovieTicketBooking/
 │   ├── ScreensController.cs
 │   ├── SeatsController.cs
 │   ├── ShowsController.cs
-│   └── BookingsController.cs
+│   ├── BookingsController.cs
+│   └── AuthController.cs
 │
 ├── Models/
 │   ├── Movie.cs
@@ -80,7 +90,8 @@ MovieTicketBooking/
 │   ├── Show.cs
 │   ├── ShowSeat.cs
 │   ├── Booking.cs
-│   └── BookingSeat.cs
+│   ├── BookingSeat.cs
+│   └── User.cs
 │
 ├── DTOs/
 │   ├── Movies/
@@ -88,40 +99,36 @@ MovieTicketBooking/
 │   ├── Screens/
 │   ├── Seats/
 │   ├── Shows/
-│   └── Bookings/
+│   ├── Bookings/
+│   └── Auth/
 │
 ├── Data/
-│   └── ApplicationDbContext.cs
+│   ├── ApplicationDbContext.cs
+│   └── Seeding/
+│       └── RoleSeeder.cs
 │
 ├── Repositories/
 │   ├── Interfaces/
-│   ├── MovieRepository.cs
-│   ├── TheatreRepository.cs
-│   ├── ScreenRepository.cs
-│   ├── SeatRepository.cs
-│   ├── ShowRepository.cs
-│   └── BookingRepository.cs
+│   └── Repository Classes
 │
 ├── Services/
 │   ├── Interfaces/
-│   ├── MovieService.cs
-│   ├── TheatreService.cs
-│   ├── ScreenService.cs
-│   ├── SeatService.cs
-│   ├── ShowService.cs
-│   └── BookingService.cs
+│   └── Service Classes
 │
+├── Constants/
 ├── Migrations/
 ├── Program.cs
 ├── appsettings.json
 └── MovieTicketBooking.csproj
 ```
 
+This is a representative structure. Refer to the actual Visual Studio solution for the exact file names and folders.
+
 ## 6. Database Design
 
-Database Name: `MovieTicketBookingDB`
+**Database Name:** `MovieTicketBookingDB`
 
-The application contains eight entities.
+The application contains nine main entities.
 
 ### 6.1 Movie
 
@@ -210,6 +217,7 @@ Stores customer booking information.
 | BookingId | Primary key |
 | BookingReference | Unique booking reference |
 | ShowId | Foreign key referencing Show |
+| UserId | User reference associated with the booking |
 | CustomerName | Customer name |
 | CustomerEmail | Customer email |
 | CustomerPhone | Customer phone |
@@ -230,6 +238,23 @@ Stores the seats included in a booking.
 
 A physical seat can appear in booking history for different shows. Therefore, SeatId is not globally unique in BookingSeats.
 
+### 6.9 User
+
+Stores application user and authentication information.
+
+The User entity supports login, password verification, and role-based access.
+
+| Information | Description |
+|---|---|
+| User ID | Primary key |
+| Full Name | User's name |
+| Email | User's email address |
+| Password Hash | Hashed password |
+| Role | Admin, TheatreManager, or Customer |
+| Created At | Account creation date |
+
+Refer to the actual `User` model for exact property names and constraints.
+
 ## 7. Database Relationships
 
 The system contains the following relationships:
@@ -243,6 +268,7 @@ The system contains the following relationships:
 7. Show → Bookings: One-to-Many
 8. Booking → BookingSeats: One-to-Many
 9. Seat → BookingSeats: One-to-Many
+10. User → Bookings: One-to-Many, where configured through the booking's user reference.
 
 ### Important Entity Differences
 
@@ -258,7 +284,18 @@ These three entities have different responsibilities and must not be merged.
 
 Replace `{id}`, `{showId}`, and other route parameters with actual database IDs.
 
-### 8.1 Movie Management
+### 8.1 Authentication
+
+Base URL: `/api/auth`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Register a customer account |
+| POST | `/api/auth/login` | Authenticate a user and generate a JWT |
+
+Authentication endpoints are used to obtain access tokens for protected API operations.
+
+### 8.2 Movie Management
 
 Base URL: `/api/movies`
 
@@ -271,13 +308,13 @@ Base URL: `/api/movies`
 | DELETE | `/api/movies/{id}` | Delete movie |
 | GET | `/api/movies/search?title=leo` | Search movies by title |
 
-Pagination parameters:
+Pagination:
 
 ```text
 /api/movies?pageNumber=1&pageSize=5
 ```
 
-### 8.2 Theatre Management
+### 8.3 Theatre Management
 
 Base URL: `/api/theatres`
 
@@ -289,7 +326,7 @@ Base URL: `/api/theatres`
 | PUT | `/api/theatres/{id}` | Update theatre |
 | DELETE | `/api/theatres/{id}` | Delete theatre |
 
-### 8.3 Screen Management
+### 8.4 Screen Management
 
 Base URL: `/api/screens`
 
@@ -303,7 +340,7 @@ Base URL: `/api/screens`
 | PUT | `/api/screens/{id}` | Update screen |
 | DELETE | `/api/screens/{id}` | Delete screen |
 
-### 8.4 Seat Management
+### 8.5 Seat Management
 
 Base URL: `/api/seats`
 
@@ -311,12 +348,13 @@ Base URL: `/api/seats`
 |---|---|---|
 | POST | `/api/seats` | Create one physical seat |
 | POST | `/api/seats/bulk` | Create multiple seats |
+| GET | `/api/seats` | Get all physical seats |
 | GET | `/api/seats/screen/{screenId}` | Get seats by screen |
 | GET | `/api/seats/{id}` | Get seat by ID |
 | PUT | `/api/seats/{id}` | Update seat |
 | DELETE | `/api/seats/{id}` | Delete seat |
 
-### 8.5 Show Management
+### 8.6 Show Management
 
 Base URL: `/api/shows`
 
@@ -340,7 +378,7 @@ Available filters:
 /api/shows?date=2026-11-03&movieId=1&theatreId=1
 ```
 
-### 8.6 Show Seat Availability
+### 8.7 Show Seat Availability
 
 These endpoints are implemented inside `ShowsController`.
 
@@ -350,21 +388,74 @@ These endpoints are implemented inside `ShowsController`.
 | GET | `/api/shows/{showId}/seats/available` | Get available seats |
 | GET | `/api/shows/{showId}/seats/booked` | Get booked seats |
 
-### 8.7 Booking Management
+### 8.8 Booking Management
 
 Base URL: `/api/bookings`
 
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/api/bookings` | Create booking |
-| GET | `/api/bookings` | Get all bookings |
+| GET | `/api/bookings` | Get bookings |
 | GET | `/api/bookings?showId=1` | Filter bookings by show |
 | GET | `/api/bookings?status=Confirmed` | Filter bookings by status |
 | GET | `/api/bookings/{id}` | Get booking details |
 | GET | `/api/bookings/show/{showId}` | Get bookings by show |
 | PUT | `/api/bookings/{id}/cancel` | Cancel booking |
 
-## 9. Business Logic and Validations
+Access to booking endpoints is subject to the configured authorization rules and booking ownership checks.
+
+## 9. Authentication and Authorization
+
+### 9.1 JWT Authentication
+
+The application uses JSON Web Tokens (JWT) to authenticate users.
+
+The login process is:
+
+1. The user sends login credentials.
+2. The API verifies the user's email and password.
+3. The password is checked against its stored hash.
+4. A JWT access token is generated after successful authentication.
+5. The token is returned to the client.
+6. The client sends the token when accessing protected endpoints.
+
+### 9.2 Authorization Header
+
+Protected API requests use the following header:
+
+```text
+Authorization: Bearer <your-jwt-token>
+```
+
+### 9.3 User Roles
+
+| Role | Responsibility |
+|---|---|
+| Admin | Access administrative operations |
+| TheatreManager | Access permitted theatre management operations |
+| Customer | Perform permitted customer booking operations |
+
+### 9.4 Role-Based Access
+
+Role-based authorization restricts API access according to the authenticated user's role.
+
+- Admin users can access Admin-restricted operations.
+- TheatreManager users can access operations permitted to their role.
+- Customer users can perform permitted customer operations, including booking.
+- Customers cannot access restricted Admin operations.
+- Requests without valid authentication cannot access protected endpoints.
+
+The current implementation uses role-based restrictions. Theatre-specific ownership enforcement for TheatreManager accounts is not included.
+
+### 9.5 Role Seeding
+
+Admin and TheatreManager accounts are initialized using the role seeding process.
+
+The seeder checks whether the configured accounts already exist before creating them. Passwords are stored as hashes.
+
+Seed account configuration is supplied through application configuration and user secrets rather than hardcoded passwords.
+
+## 10. Business Logic and Validations
 
 ### Movie Validation
 
@@ -416,7 +507,7 @@ Base URL: `/api/bookings`
 - The associated ShowSeat records become Available.
 - Booking and BookingSeat history is preserved.
 
-## 10. Transaction Handling
+## 11. Transaction Handling
 
 Database transactions are used for booking creation and cancellation.
 
@@ -447,9 +538,9 @@ If an operation fails, the transaction is rolled back.
 
 If an operation fails, the transaction is rolled back.
 
-**Note:** These transactions ensure that the related database operations succeed or fail together. They do not provide advanced protection against simultaneous booking requests.
+**Note:** These transactions ensure that related database operations succeed or fail together. They do not provide advanced protection against simultaneous booking requests.
 
-## 11. HTTP Status Codes
+## 12. HTTP Status Codes
 
 | Status Code | Meaning | Example |
 |---|---|---|
@@ -457,15 +548,19 @@ If an operation fails, the transaction is rolled back.
 | 201 | Created | Resource successfully created |
 | 204 | No Content | Successful deletion |
 | 400 | Bad Request | Invalid request data |
+| 401 | Unauthorized | Missing or invalid authentication |
+| 403 | Forbidden | Authenticated user lacks the required role |
 | 404 | Not Found | Requested record does not exist |
 | 409 | Conflict | Duplicate or unavailable resource |
 | 500 | Internal Server Error | Unexpected server error |
 
-## 12. Database Setup
+## 13. Database Setup
 
 ### Connection String
 
 Configure the SQL Server connection in `appsettings.json`.
+
+Example:
 
 ```json
 {
@@ -479,10 +574,17 @@ Change the server name if your SQL Server instance is different.
 
 ### Entity Framework Core Migrations
 
-Run these commands in Visual Studio Package Manager Console:
+Run these commands in Visual Studio Package Manager Console.
+
+If the initial migration has not been created:
 
 ```powershell
 Add-Migration InitialCreate
+```
+
+Update the database:
+
+```powershell
 Update-Database
 ```
 
@@ -492,11 +594,19 @@ If the migration already exists, run:
 Update-Database
 ```
 
-## 13. Testing
+### Application Secrets
+
+Configure JWT signing settings and seeded account credentials using user secrets or environment variables.
+
+Do not store real passwords or JWT signing keys in source control.
+
+## 14. Testing
 
 Postman is used to test all API modules.
 
-The complete workflow is:
+### Functional Testing
+
+The complete booking workflow is:
 
 1. Create a movie.
 2. Create a theatre.
@@ -505,36 +615,62 @@ The complete workflow is:
 5. Create a show.
 6. View all seats for the show.
 7. View available seats.
-8. Create a booking for two available seats.
+8. Create a booking for available seats.
 9. View booked seats.
 10. Retrieve the booking.
 11. Cancel the booking.
 12. View available seats again.
 
-Additional validation tests include duplicate records, invalid durations, invalid show times, overlapping shows, unavailable seats, duplicate seat IDs, and repeated cancellation.
+### Validation Testing
+
+Additional validation tests include:
+
+- Duplicate movie or theatre data where applicable.
+- Duplicate screen names.
+- Duplicate physical seats.
+- Invalid movie duration.
+- Invalid show times.
+- Overlapping shows.
+- Unavailable seats.
+- Duplicate seat IDs.
+- Nonexistent booking IDs.
+- Repeated booking cancellation.
+
+### Authentication and Authorization Testing
+
+The following scenarios are tested:
+
+| Test | Expected Result |
+|---|---|
+| Admin login with valid credentials | JWT token generated |
+| TheatreManager login with valid credentials | JWT token generated |
+| Customer login with valid credentials | JWT token generated |
+| Admin accesses Admin-restricted endpoint | Access permitted |
+| TheatreManager accesses permitted endpoint | Access permitted |
+| Customer creates a permitted booking | Access permitted |
+| Customer accesses restricted Admin endpoint | 403 Forbidden |
+| Request without a valid token to a protected endpoint | 401 Unauthorized |
 
 Database records are verified using SQL queries in SQL Server Management Studio.
 
-## 14. Project Scope and Limitations
+## 15. Project Scope and Limitations
 
-This implementation covers the Version 1 backend requirements.
+This implementation covers the Version 1 backend requirements along with JWT authentication and role-based authorization.
 
 The following features are outside the current scope:
 
-- User registration and login.
-- Authentication and authorization.
-- JWT and role-based access.
 - Payment gateway integration.
 - Refund processing.
 - Temporary seat holds.
 - Advanced concurrency handling.
 - Frontend application.
 - Production deployment automation.
+- Theatre-specific ownership enforcement for TheatreManager accounts.
 
-## 15. Conclusion
+## 16. Conclusion
 
 The Movie Ticket Booking System demonstrates the development of a RESTful backend application using ASP.NET Core Web API and SQL Server.
 
-It covers CRUD operations, layered architecture, Entity Framework Core relationships, DTOs, repository and service patterns, business validations, show scheduling, seat availability, transaction-based booking, and cancellation.
+It covers CRUD operations, layered architecture, Entity Framework Core relationships, DTOs, repository and service patterns, business validations, show scheduling, seat availability, transaction-based booking, booking cancellation, JWT authentication, and role-based authorization.
 
 The project provides practical experience in designing and implementing a structured backend application.

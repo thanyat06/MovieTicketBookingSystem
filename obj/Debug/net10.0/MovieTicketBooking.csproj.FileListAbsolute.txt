@@ -164,3 +164,6 @@ D:\HCL\MovieTicketBooking\MovieTicketBooking\obj\Debug\net10.0\refint\MovieTicke
 D:\HCL\MovieTicketBooking\MovieTicketBooking\obj\Debug\net10.0\MovieTicketBooking.pdb
 D:\HCL\MovieTicketBooking\MovieTicketBooking\obj\Debug\net10.0\MovieTicketBooking.genruntimeconfig.cache
 D:\HCL\MovieTicketBooking\MovieTicketBooking\obj\Debug\net10.0\ref\MovieTicketBooking.dll
+D:\HCL\MovieTicketBooking\MovieTicketBooking\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\HCL\MovieTicketBooking\MovieTicketBooking\bin\Debug\net10.0\Microsoft.Bcl.Cryptography.dll
+D:\HCL\MovieTicketBooking\MovieTicketBooking\obj\Debug\net10.0\MovieTicketBooking.sourcelink.json
